@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+enum RunStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+enum RunLogLevel {
+  debug
+  info
+  warn
+  error
+}
+
+model Agent {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  role          String
+  systemPrompt  String   @map("system_prompt")
+  modelProvider String?  @map("model_provider")
+  modelName     String?  @map("model_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  runs Run[]
+
+  @@map("agents")
+}
+
+model Task {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  status      TaskStatus @default(queued)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  runs Run[]
+
+  @@map("tasks")
+}
+
+model Run {
+  id        String    @id @default(uuid()) @db.Uuid
+  taskId    String    @map("task_id") @db.Uuid
+  agentId   String    @map("agent_id") @db.Uuid
+  status    RunStatus @default(queued)
+  startedAt DateTime? @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  input     Json?
+  output    Json?
+  error     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  logs  RunLog[]
+
+  @@map("runs")
+}
+
+model RunLog {
+  id        String      @id @default(uuid()) @db.Uuid
+  runId     String      @map("run_id") @db.Uuid
+  level     RunLogLevel @default(info)
+  message   String
+  meta      Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@map("run_logs")
+}
