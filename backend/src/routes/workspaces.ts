@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { parseSchema } from "../lib/validate";
-import { sendError } from "../lib/errors";
-import { listWorkspaces, listWorkspaceTree, loadWorkspaceFile, workspaceLimits } from "../services/workspaceService";
+import { parseSchema } from "../lib/validate.js";
+import { sendError } from "../lib/errors.js";
+import { listWorkspaces, listWorkspaceTree, loadWorkspaceFile, workspaceLimits } from "../services/workspaceService.js";
 
 const router = Router();
 

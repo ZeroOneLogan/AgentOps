@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { parseSchema } from "../lib/validate";
-import { sendError } from "../lib/errors";
-import { getAgentMetrics, getOverviewMetrics, getRunsByDay, getRunsByStatus } from "../services/metricsService";
+import { parseSchema } from "../lib/validate.js";
+import { sendError } from "../lib/errors.js";
+import { getAgentMetrics, getOverviewMetrics, getRunsByDay, getRunsByStatus } from "../services/metricsService.js";
 
 const router = Router();
 

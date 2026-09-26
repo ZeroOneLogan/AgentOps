@@ -19,6 +19,7 @@ enum RunStatus {
   running
   succeeded
   failed
+  skipped
 }
 
 enum RunLogLevel {
@@ -87,4 +88,14 @@ model RunLog {
   run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@map("run_logs")
+}
+
+// Versioned evidence documents preserve the exact inputs and results of each attempt.
+model Investigation {
+  id        String   @id @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  evidence  Json
+
+  @@index([createdAt])
+  @@map("investigations")
 }

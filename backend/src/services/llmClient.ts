@@ -31,6 +31,7 @@ export async function runCompletion({ systemPrompt, userPrompt, model }: LlmRequ
   const baseUrl = normalizeBaseUrl(process.env.LLM_BASE_URL);
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
+    signal: AbortSignal.timeout(30_000),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`
@@ -53,6 +54,7 @@ export async function runCompletion({ systemPrompt, userPrompt, model }: LlmRequ
   }
 
   const text = payload?.choices?.[0]?.message?.content?.toString() ?? "";
+  if (!text.trim()) throw new Error("LLM returned an empty response");
   const usage = payload?.usage
     ? {
         promptTokens: payload.usage.prompt_tokens,

@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { z, type ZodSchema } from "zod";
-import { ApiError } from "./errors";
+import { ApiError } from "./errors.js";
 
-const queryNumber = (schema: z.ZodNumber) =>
+const queryNumber = (schema: z.ZodType<number>) =>
   z.preprocess((value) => {
     if (Array.isArray(value)) return value[0];
     if (value === "") return undefined;

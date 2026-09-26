@@ -1,41 +1,13 @@
-# demo guide
+# Three-minute walkthrough
 
-Use this during interviews. It is short, deterministic, and shows real engineering judgment.
+Start with `pnpm install && pnpm demo`, then open http://localhost:5173.
 
-## setup (3-5 minutes)
-1. Start services:
-   - pnpm install
-   - cp backend/.env.example backend/.env
-   - cp frontend/.env.example frontend/.env
-   - cd infra && docker compose up -d
-   - pnpm -C backend db:migrate
-   - pnpm dev
-2. Open the UI at http://localhost:5173
+1. **State the problem.** “An agent can finish its response and still produce incorrect code. This project separates execution from verification.”
+2. **Run the baseline.** Select “Run baseline investigation.” Explain that fixture mode uses authored examples, while the tests really execute. Show “Completed” next to “Regression detected.”
+3. **Inspect the failure.** Five checks pass. The discounted order and fully discounted order fail. Expected shipping is $5.99, but the function returns $0.
+4. **Explain the source.** Open Candidate code. It checks `subtotalCents >= 5000` and ignores the discount argument. Open Exact inputs to show the intentionally underspecified prompt and explicit acceptance contract.
+5. **Test the correction.** Select “Try corrected instructions.” In fixture mode this loads the authored corrected candidate and independently executes it. In live mode it makes a fresh model call and verifies in Docker.
+6. **Compare evidence.** Show 5/7 → 7/7, both candidates, and the event trail. Select the original saved attempt to prove its outcome is unchanged. Refresh to demonstrate persistence.
+7. **Export and discuss limits.** Export JSON. Explain that passing seven checks is evidence for those cases, not universal correctness. Hashes identify content but are not signatures.
 
-## seed data
-Create three agents (Planner, Coder, Reviewer) and one task. Use the UI or curl from README.
-
-## live walkthrough (5 minutes)
-1. Agents page: show that agents are explicit and editable.
-2. Tasks page: create a task.
-3. Task detail: run the workflow. Show the timeline and logs.
-4. Metrics page: show run counts and durations.
-5. (Optional) Workspace context: select a few files and re-run.
-6. (Optional) GitHub PR: map output to a file and create a PR.
-
-## suggested narration
-- "This is a small system, but every step is inspectable."
-- "Each agent step is its own run with its own logs."
-- "We avoid queues for clarity. It is deliberate tradeoff."
-- "Context is explicit and auditable. No magic ingestion."
-- "PR creation is manual and reversible."
-
-## common questions
-- Why no queues? -> Keep the system deterministic and easy to reason about.
-- How do you scale? -> Add workers, retry strategy, and pre-aggregated metrics.
-- How do you avoid prompt injection? -> Only user-selected files, strict root, allowlist.
-
-## talking points
-- Simple data model that supports execution and observability
-- Intentional scope and explicit tradeoffs
-- Clear boundaries between UI, API, and integrations
+Useful interview discussion: why not auto-retry an interrupted model call; why a provider response is not a quality metric; how to transition from a process lock to durable leases; how to bind a future PR approval to the exact code hash and repository commit that was verified.

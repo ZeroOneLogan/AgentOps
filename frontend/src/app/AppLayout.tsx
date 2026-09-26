@@ -5,7 +5,8 @@ type Props = {
 };
 
 const navItems = [
-  { label: "Dashboard", to: "/" },
+  { label: "Investigations", to: "/" },
+  { label: "Dashboard", to: "/dashboard" },
   { label: "Agents", to: "/agents" },
   { label: "Tasks", to: "/tasks" },
   { label: "Metrics", to: "/metrics" }
@@ -19,14 +20,15 @@ export default function AppLayout({ children }: Props) {
           <div className="brand__mark" />
           <div>
             <p className="brand__name">AgentOps</p>
-            <p className="brand__tag">Milestone 2</p>
+            <p className="brand__tag">Agent reliability, inspected</p>
           </div>
         </div>
         <nav className="nav-links" aria-label="Primary">
-          {navItems.map((item) => (
+          {navItems.filter(item => import.meta.env.VITE_DEMO_MODE !== "true" || item.to === "/").map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === "/"}
               className={({ isActive }) =>
                 `nav-link${isActive ? " nav-link--active" : ""}`
               }
@@ -36,7 +38,7 @@ export default function AppLayout({ children }: Props) {
           ))}
         </nav>
         <div className="nav-meta">
-          <span className="pill">API /api</span>
+          <span className="pill">Evidence before confidence</span>
         </div>
       </header>
 

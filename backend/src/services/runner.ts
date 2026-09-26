@@ -1,6 +1,6 @@
-import { prisma } from "../lib/db";
-import { runCompletion } from "./llmClient";
-import { buildContextPrompt } from "./contextBuilder";
+import { prisma } from "../lib/db.js";
+import { runCompletion } from "./llmClient.js";
+import { buildContextPrompt } from "./contextBuilder.js";
 
 const DEFAULT_MODEL = "gpt-4.1-mini";
 

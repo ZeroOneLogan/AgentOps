@@ -32,6 +32,7 @@ export function notFound(res: Response, resource = "resource") {
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  void _next; // Express recognizes error middleware by its four-argument signature.
   if (err instanceof ApiError) {
     return sendError(res, err.status, err.code, err.message, err.details);
   }

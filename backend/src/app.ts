@@ -1,20 +1,24 @@
+import { InvestigationService } from "./investigations/service.js";
+import { PrismaInvestigationStore } from "./investigations/prismaStore.js";
+import { investigationRouter } from "./investigations/routes.js";
 import express from "express";
 import cors from "cors";
 import { createRequire } from "node:module";
-import agentsRouter from "./routes/agents";
-import tasksRouter from "./routes/tasks";
-import runsRouter from "./routes/runs";
-import metricsRouter from "./routes/metrics";
-import workspacesRouter from "./routes/workspaces";
-import githubRouter from "./routes/github";
-import { errorHandler, sendError } from "./lib/errors";
+import agentsRouter from "./routes/agents.js";
+import tasksRouter from "./routes/tasks.js";
+import runsRouter from "./routes/runs.js";
+import metricsRouter from "./routes/metrics.js";
+import workspacesRouter from "./routes/workspaces.js";
+import githubRouter from "./routes/github.js";
+import { errorHandler, sendError } from "./lib/errors.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json");
 
+export const investigations = new InvestigationService(new PrismaInvestigationStore(), process.env.ENABLE_LIVE_INVESTIGATIONS === "true");
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: ["http://localhost:5173", "http://127.0.0.1:5173"] }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
@@ -25,6 +29,7 @@ app.get("/version", (_req, res) => {
   res.json({ name: "agentops", version: pkg.version || "0.0.0" });
 });
 
+app.use("/api/investigations", investigationRouter(investigations));
 app.use("/api/agents", agentsRouter);
 app.use("/api/tasks", tasksRouter);
 app.use("/api", runsRouter);

@@ -18,3 +18,10 @@ pnpm-debug.log*
 
 # OS
 .DS_Store
+
+# Local demonstration evidence
+backend/.demo-data/
+
+# Browser test output
+/test-results/
+/playwright-report/

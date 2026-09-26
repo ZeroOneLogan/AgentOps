@@ -1,8 +1,9 @@
-import app from "./app";
-import { env } from "./lib/env";
-import { prisma } from "./lib/db";
+import app, { investigations } from "./app.js";
+import { env } from "./lib/env.js";
+import { prisma } from "./lib/db.js";
 
-const server = app.listen(env.PORT, () => {
+await investigations.recoverInterrupted();
+const server = app.listen(env.PORT, env.HOST, () => {
   console.log(`[backend] listening on http://localhost:${env.PORT}`);
 });
 

@@ -32,19 +32,33 @@ function languageFromExt(filePath: string) {
   return ext.startsWith(".") ? ext.slice(1) : ext || "text";
 }
 
-function normalizeWorkspacePath(workspaceRoot: string, workspaceName: string) {
-  const resolved = path.resolve(workspaceRoot, workspaceName);
-  if (!resolved.startsWith(workspaceRoot)) {
-    throw new Error("Invalid workspace path");
+function assertInside(parent: string, target: string) {
+  const relative = path.relative(parent, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error("Invalid workspace path: outside permitted directory");
   }
+}
+
+async function normalizeWorkspacePath(workspaceRoot: string, workspaceName: string) {
+  const root = await fs.realpath(workspaceRoot);
+  const lexical = path.resolve(root, workspaceName);
+  assertInside(root, lexical);
+  const resolved = await fs.realpath(lexical);
+  assertInside(root, resolved);
   return resolved;
 }
 
-function normalizeFilePath(workspaceRoot: string, workspaceName: string, relativePath: string) {
-  const workspacePath = normalizeWorkspacePath(workspaceRoot, workspaceName);
-  const resolved = path.resolve(workspacePath, relativePath);
-  if (!resolved.startsWith(workspacePath)) {
-    throw new Error("Invalid file path");
+async function normalizeFilePath(workspaceRoot: string, workspaceName: string, relativePath: string) {
+  if (relativePath.split(/[\\/]/).some(part => part.startsWith(".") && part !== "..")) {
+    throw new Error("Hidden files are not allowed as context");
+  }
+  const workspacePath = await normalizeWorkspacePath(workspaceRoot, workspaceName);
+  const lexical = path.resolve(workspacePath, relativePath);
+  assertInside(workspacePath, lexical);
+  const resolved = await fs.realpath(lexical);
+  assertInside(workspacePath, resolved);
+  if (path.relative(workspacePath, resolved).split(path.sep).some(part => part.startsWith("."))) {
+    throw new Error("Hidden files are not allowed as context");
   }
   return { workspacePath, resolved };
 }
@@ -81,7 +95,7 @@ async function walkDir(base: string, current: string, files: WorkspaceFile[]) {
 
 export async function listWorkspaceTree(workspaceName: string) {
   const root = getWorkspaceRoot();
-  const workspacePath = normalizeWorkspacePath(root, workspaceName);
+  const workspacePath = await normalizeWorkspacePath(root, workspaceName);
   const files: WorkspaceFile[] = [];
   await walkDir(workspacePath, workspacePath, files);
   return files.sort((a, b) => a.path.localeCompare(b.path));
@@ -95,10 +109,7 @@ export async function loadWorkspaceFiles(
   const files: WorkspaceFileContent[] = [];
 
   for (const relPath of relativePaths) {
-    const { workspacePath, resolved } = normalizeFilePath(root, workspaceName, relPath);
-    if (!resolved.startsWith(workspacePath)) {
-      throw new Error("Invalid file path");
-    }
+    const { resolved } = await normalizeFilePath(root, workspaceName, relPath);
     if (!isAllowedExtension(resolved)) {
       throw new Error(`File type not allowed: ${relPath}`);
     }
@@ -120,10 +131,7 @@ export async function loadWorkspaceFiles(
 
 export async function loadWorkspaceFile(workspaceName: string, relativePath: string) {
   const root = getWorkspaceRoot();
-  const { workspacePath, resolved } = normalizeFilePath(root, workspaceName, relativePath);
-  if (!resolved.startsWith(workspacePath)) {
-    throw new Error("Invalid file path");
-  }
+  const { resolved } = await normalizeFilePath(root, workspaceName, relativePath);
   if (!isAllowedExtension(resolved)) {
     throw new Error(`File type not allowed: ${relativePath}`);
   }

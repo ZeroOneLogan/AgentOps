@@ -4,15 +4,21 @@
   "version": "0.0.1",
   "packageManager": "pnpm@9.12.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "concurrently -k -n backend,frontend -c green,blue \"pnpm -C backend dev\" \"pnpm -C frontend dev\"",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "demo": "concurrently -k -n api,ui \"pnpm -C backend demo\" \"pnpm -C frontend demo\"",
+    "build": "pnpm -r build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "postinstall": "pnpm -C backend db:generate",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.58.2",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "concurrently": "^9.1.0",

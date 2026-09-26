@@ -1,0 +1,32 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { tmpdir } from "node:os";
+import { loadWorkspaceFile, loadWorkspaceFiles, listWorkspaceTree } from "../src/services/workspaceService.js";
+
+test("workspace boundaries reject traversal, prefix siblings, symlink escapes, and hidden context", async t => {
+  const base = await fs.mkdtemp(path.join(tmpdir(), "workspace-test-"));
+  const root = path.join(base, "work");
+  const previousRoot = process.env.WORKSPACE_ROOT;
+  process.env.WORKSPACE_ROOT = root;
+  t.after(async () => { if (previousRoot === undefined) delete process.env.WORKSPACE_ROOT; else process.env.WORKSPACE_ROOT = previousRoot; await fs.rm(base, { recursive: true, force: true }); });
+  await fs.mkdir(path.join(root, "project"), { recursive: true });
+  await fs.mkdir(path.join(root, "project-private"));
+  await fs.mkdir(path.join(base, "work-private"));
+  await fs.writeFile(path.join(root, "project", "ok.ts"), "export const ok = true;");
+  await fs.writeFile(path.join(root, "project", ".secret.json"), '{"secret":true}');
+  await fs.writeFile(path.join(root, "project-private", "secret.ts"), "private");
+  await fs.writeFile(path.join(base, "work-private", "secret.ts"), "private");
+  await fs.symlink(path.join(base, "work-private", "secret.ts"), path.join(root, "project", "link.ts"));
+  await fs.symlink(path.join(root, "project", ".secret.json"), path.join(root, "project", "hidden-link.ts"));
+  await fs.symlink(path.join(base, "work-private"), path.join(root, "escape"));
+  assert.equal((await loadWorkspaceFile("project", "ok.ts")).content, "export const ok = true;");
+  await assert.rejects(loadWorkspaceFile("project", "../project-private/secret.ts"), /outside permitted/);
+  await assert.rejects(loadWorkspaceFiles("project", ["link.ts"]), /outside permitted/);
+  await assert.rejects(loadWorkspaceFile("project", ".secret.json"), /Hidden/);
+  await assert.rejects(loadWorkspaceFile("project", "hidden-link.ts"), /Hidden/);
+  await assert.rejects(listWorkspaceTree("../work-private"), /outside permitted/);
+  await assert.rejects(listWorkspaceTree("escape"), /outside permitted/);
+  assert.deepEqual((await listWorkspaceTree("project")).map(f => f.path), ["ok.ts"]);
+});

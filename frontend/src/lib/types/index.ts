@@ -20,7 +20,7 @@ export type Task = {
   updatedAt: string;
 };
 
-export type RunStatus = "queued" | "running" | "succeeded" | "failed";
+export type RunStatus = "queued" | "running" | "succeeded" | "failed" | "skipped";
 
 export type Run = {
   id: string;

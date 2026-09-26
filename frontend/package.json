@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"(frontend) no tests yet\""
+    "demo": "vite --mode demo"
   },
   "dependencies": {
     "react": "^18.3.1",

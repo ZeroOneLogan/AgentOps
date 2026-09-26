@@ -1,4 +1,4 @@
-import { loadWorkspaceFiles, workspaceLimits } from "./workspaceService";
+import { loadWorkspaceFiles, workspaceLimits } from "./workspaceService.js";
 
 export type ContextFile = {
   path: string;
@@ -57,6 +57,6 @@ export async function buildContextPrompt(
   return {
     prompt: [base, contextSection].join("\n"),
     total_bytes: totalBytes,
-    files: files.map(({ content: _content, ...meta }) => meta)
+    files: files.map(({ path, size_bytes, language }) => ({ path, size_bytes, language }))
   } satisfies ContextResult;
 }
