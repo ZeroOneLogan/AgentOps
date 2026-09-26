@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { prisma } from "../lib/db";
-import { notFound } from "../lib/errors";
-import { asyncHandler, parsePagination, parseSchema } from "../lib/validate";
+import { prisma } from "../lib/db.js";
+import { notFound } from "../lib/errors.js";
+import { asyncHandler, parsePagination, parseSchema } from "../lib/validate.js";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
-import { prisma } from "../lib/db";
-import { logEvent } from "./runner";
-import { createBranch, createPullRequest, getBranchSha, listRepos, upsertFile } from "./githubClient";
+import { prisma } from "../lib/db.js";
+import { logEvent } from "./runner.js";
+import { createBranch, createPullRequest, getBranchSha, listRepos, upsertFile } from "./githubClient.js";
 
 export type RepoInfo = {
   id: number;

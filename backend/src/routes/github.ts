@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { parseSchema } from "../lib/validate";
-import { sendError } from "../lib/errors";
-import { createPullRequestFromRun, listAccessibleRepos } from "../services/prService";
+import { parseSchema } from "../lib/validate.js";
+import { sendError } from "../lib/errors.js";
+import { createPullRequestFromRun, listAccessibleRepos } from "../services/prService.js";
 
 const router = Router();
 
@@ -32,7 +32,7 @@ router.post("/repos", async (_req, res, next) => {
   }
 });
 
-router.post("/create-pr", async (req, res, next) => {
+router.post("/create-pr", async (req, res) => {
   try {
     const payload = parseSchema(prSchema, req.body, "Invalid PR payload");
     const result = await createPullRequestFromRun({

@@ -1,7 +1,8 @@
+import type { Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
-import { prisma } from "../../lib/db";
-import { executeSingleAgent, logEvent } from "../runner";
-import { buildContextPrompt } from "../contextBuilder";
+import { prisma } from "../../lib/db.js";
+import { executeSingleAgent, logEvent } from "../runner.js";
+import { buildContextPrompt } from "../contextBuilder.js";
 
 const STEPS = ["Planner", "Coder", "Reviewer"] as const;
 
@@ -97,6 +98,7 @@ async function createWorkflowRuns(
 
   return {
     workflowId,
+    taskId,
     runIds,
     task: { title: task.title, description: task.description },
     agents: Object.fromEntries(orderedAgents.map((agent) => [agent!.id, agent!])),
@@ -111,7 +113,7 @@ async function updateRunInput(runId: string, input: Record<string, unknown>) {
   await prisma.run.update({
     where: { id: runId },
     data: {
-      input
+      input: JSON.parse(JSON.stringify(input)) as Prisma.InputJsonValue
     }
   });
 }
@@ -193,6 +195,10 @@ async function executeWorkflowSteps(context: WorkflowContext, agentIds: string[]
         failed_step: stepName
       });
 
+      await prisma.run.updateMany({
+        where: { id: { in: runIds.slice(stepIndex + 1) }, status: "queued" },
+        data: { status: "skipped", endedAt: new Date(), error: `Not executed: ${stepName} failed` }
+      });
       break;
     }
 
